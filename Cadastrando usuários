@@ -1,0 +1,204 @@
+
+package AgendaTelefonica;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
+ 
+
+public class Cadastrando extends JPanel implements ListSelectionListener {
+    private final JList lista;
+    private DefaultListModel modeloLista;
+ 
+    private final JButton bDeletar;
+    private final JButton bAdicionar;
+    private final JTextField cadastro;
+    
+    
+ 
+    public Cadastrando() {
+        super(new BorderLayout());
+       
+        modeloLista = new DefaultListModel();
+        modeloLista.addElement("Júnior");
+        modeloLista.addElement("Luiza");
+        
+        //Cria uma lista e coloca uma barra de rolagem.
+        lista = new JList(modeloLista);
+        lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        lista.setSelectedIndex(0);
+        lista.addListSelectionListener(this);
+        lista.setVisibleRowCount(5);
+        JScrollPane barraDeRolagem = new JScrollPane(lista);
+        
+        //EVENTO COM DOIS CLICK DO MOUSE
+        lista.addMouseListener(new MouseAdapter() {
+        public void mouseClicked(MouseEvent evt) {
+            JList lista = (JList)evt.getSource();
+            if (evt.getClickCount() == 2) {
+                // Double-click detected
+                int selecionado = lista.getSelectedIndex();
+                
+                modeloLista.addElement(JOptionPane.showInputDialog("Modificar o nome de : "+modeloLista.getElementAt(selecionado)));
+                modeloLista.removeElementAt(selecionado);
+                
+                lista.setSelectedIndex(selecionado);
+                lista.ensureIndexIsVisible(selecionado);
+                
+            } else if (evt.getClickCount() == 3) {
+
+                // Triple-click detected
+                int selecionado = lista.locationToIndex(evt.getPoint());
+            }
+        }
+        });
+ 
+        bDeletar = new JButton("Deletar");
+        bDeletar.setActionCommand("Deletar");
+        bDeletar.addActionListener(new RemoverCadastro());
+        
+        bAdicionar = new JButton("Adicionar");
+        AdicionarCadastro objAdicionarCadastro = new AdicionarCadastro(bAdicionar);
+        bAdicionar.setActionCommand("Adicionar");
+        bAdicionar.addActionListener(objAdicionarCadastro);
+        bAdicionar.setEnabled(false);
+        
+        cadastro = new JTextField(10);
+        cadastro.addActionListener(objAdicionarCadastro);
+        cadastro.getDocument().addDocumentListener(objAdicionarCadastro);
+ 
+        //Cria um painel que usa BoxLayout.
+        JPanel buttonPane = new JPanel();
+        buttonPane.setLayout(new BoxLayout(buttonPane,BoxLayout.LINE_AXIS));
+        buttonPane.add(bDeletar);
+        buttonPane.add(Box.createHorizontalStrut(10));
+        buttonPane.add(cadastro);
+        buttonPane.add(Box.createHorizontalStrut(10));
+        buttonPane.add(bAdicionar);
+        buttonPane.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
+        add(barraDeRolagem, BorderLayout.CENTER);
+        add(buttonPane, BorderLayout.PAGE_END);
+    }
+ 
+    class RemoverCadastro implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            int selecionado = lista.getSelectedIndex();
+            modeloLista.remove(selecionado);
+ 
+            int tamanho = modeloLista.getSize();
+ 
+            if (tamanho == 0) { 
+                bDeletar.setEnabled(false);
+ 
+            } else {
+                if (selecionado == modeloLista.getSize()) {
+                    //Tira o item da ultima posição
+                    selecionado--;
+                }
+ 
+            lista.setSelectedIndex(selecionado);
+            lista.ensureIndexIsVisible(selecionado);
+            }
+        }
+    }
+    
+    class AdicionarCadastro implements ActionListener, DocumentListener {
+        private boolean habilitar = false;
+        private JButton botao;
+ 
+        public AdicionarCadastro(JButton botao) {
+            this.botao = botao;
+        }
+ 
+        //Precisa do ActionListener.
+        public void actionPerformed(ActionEvent e) {
+            String nome = cadastro.getText();
+ 
+            //Sem nome em branco ou igual na lista.
+            if (nome.equals("") || estaNaLista(nome)) {
+                Toolkit.getDefaultToolkit().beep();
+                JOptionPane.showMessageDialog(null, "O Nome já existe");
+                cadastro.requestFocusInWindow();
+                cadastro.selectAll();
+                return;
+            }
+ 
+            modeloLista.addElement(cadastro.getText());
+ 
+            //Apaga o campo cadastro (JTextField).
+            cadastro.requestFocusInWindow();
+            cadastro.setText("");
+        }
+
+        protected boolean estaNaLista(String nome) {
+            return modeloLista.contains(nome);
+        }
+        
+        
+        //Precisa do DocumentListener.
+        public void insertUpdate(DocumentEvent e) {
+            habilitarBotao();
+        }
+ 
+        //Precisa do DocumentListener.
+        public void removeUpdate(DocumentEvent e) {
+            cadastroVazio(e);
+        }
+ 
+        //Precisa do DocumentListener.
+        public void changedUpdate(DocumentEvent e) {
+            if (!cadastroVazio(e)) {
+                habilitarBotao();
+            }
+        }
+        
+        private void habilitarBotao() {
+            if (!habilitar) {
+                botao.setEnabled(true);
+            }
+        }
+ 
+        private boolean cadastroVazio(DocumentEvent e) {
+            if (e.getDocument().getLength() <= 0) {
+                botao.setEnabled(false);
+                habilitar = false;
+                return true;
+            }
+            return false;
+        }
+    }
+ 
+    //Esse metódo precisa do ListSelectionListener.
+   public void valueChanged(ListSelectionEvent e) {
+        if (e.getValueIsAdjusting() == false) {
+ 
+            if (lista.getSelectedIndex() == -1) {
+            //sem seleção, desabilitar botao deletar.
+                bDeletar.setEnabled(false);
+ 
+            } else {
+            //selecionado, habilitar botao deletar.
+                bDeletar.setEnabled(true);
+            }
+        }
+    }
+
+    private static void janela() {
+        //Create and set up the window.
+        JFrame janela = new JFrame("Cadastro");
+        janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+ 
+        //Create and set up the content pane.
+        JComponent conteudoTela = new Cadastrando();
+        janela.setContentPane(conteudoTela);
+        janela.setBounds(620, 290, 350, 200);
+
+        //visibilidade da janela.
+        janela.setVisible(true);
+    }
+ 
+    public static void main(String[] args) {
+        janela();
+    }
+}
