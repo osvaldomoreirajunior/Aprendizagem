@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Listagem de finanças utilizando o Spring Boot</title>
+  <meta charset="UTF-8">
+</head>
+ 
+<body>
+  <h1>Lista de despesas</h1>
+  <table>
+    <thead>
+      <tr>
+      	<th>Informe a despesa sendo True = positivo ou False = negativo </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="movimentacao: ${movimentacaoDAO}"> 
+       	<td th:text="${movimentacao.id}"></td>
+        <td th:text="${movimentacao.titulo}"></td>
+        <td th:text="${movimentacao.valor}"></td>
+        <td th:text="${movimentacao.despesa}"></td>
+      </tr>
+    </tbody>
+  </table>
+  <form method="POST" action="/movimentacao">
+  	<input type="text" id="titulo" name="titulo" value="Título" onfocus="this.value='';" />
+  	<input type="text" id="valor" name="valor" value="Valor" onfocus="this.value='';" />
+  	<input type="text" id="despesa" name="despesa" value="Despesa" onfocus="this.value='';" />
+  	<input type="submit" />
+  </form>
+  
+  <h1>Saldo</h1>
+  <tr>
+	<td th:text="${movimentacao.totalfinancas}"></td>
+  </tr>
+  
+  
+</body>
+</html>
