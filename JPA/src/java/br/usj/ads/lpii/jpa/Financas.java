@@ -13,6 +13,7 @@ public class Financas {
     EntityManager em = Persistence
             .createEntityManagerFactory("Financa_JPAPU")
             .createEntityManager();
+    
     private final List<Movimentacao> movimentacoes = new ArrayList<>();
 
     public void adicionarMovimentacao(Movimentacao m) {
